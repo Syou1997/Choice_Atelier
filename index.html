@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>ランダム選択ツール</title>
+
+  <!-- 日本語フォント：見出しは丸み、本文は可読性重視 -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <!-- 見出し：M PLUS Rounded 1c / 本文：Noto Sans JP -->
+  <link href="https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@600;800&family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="styles.css" />
+  <meta name="color-scheme" content="light" />
+</head>
+<body class="theme-sakura">
+  <!-- 主題背景：固定散落符號（無動畫） -->
+  <div id="themeBG" class="theme-bg" aria-hidden="true"></div>
+
+  <main class="app">
+    <section class="card" aria-labelledby="title">
+      <div class="title">
+        <h1 id="title">ランダム選択ツール</h1>
+        <span class="hint">少なくとも2つの項目を入力し、「Enter」または「追加」を押してください。</span>
+
+        <div class="theme-switcher">
+          <label for="themeSelect">テーマ:</label>
+          <select id="themeSelect" class="theme-select" aria-label="テーマ切替">
+            <option value="sakura">🌸 桜</option>
+            <option value="ocean">🌊 海</option>
+            <option value="forest">🌲 森林</option>
+            <option value="space">🌌 宇宙</option>
+            <option value="sunset">🌅 夕焼け</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- エラー（防呆）提示：inputの上 -->
+      <div id="alertArea" class="alert-area" aria-live="polite"></div>
+
+      <div class="row center input-row" role="group" aria-label="項目追加">
+        <div class="grow input-wrap">
+          <input
+            id="itemInput"
+            class="input"
+            type="text"
+            inputmode="text"
+            maxlength="80"
+            placeholder="項目を入力してEnter…（最大80文字）"
+            aria-label="項目入力欄"
+            autocomplete="off"
+          />
+        </div>
+        <button id="addBtn" class="btn btn--primary add-btn" type="button" aria-label="項目を追加">追加</button>
+      </div>
+
+      <p class="muted">ゴミ箱ボタンで削除可能、少なくとも2つ以上追加してください。</p>
+
+      <!-- 追加成功提示：説明文の下 -->
+      <div id="successArea" class="success-area" aria-live="polite"></div>
+
+      <div id="chips" class="chips" aria-live="polite"></div>
+
+      <div class="actions center">
+        <button id="clearBtn" class="btn btn--ghost" type="button">すべてクリア</button>
+        <button id="clearHistoryBtn" class="btn btn--ghost" type="button">履歴をクリア</button>
+        <button id="pickBtn" class="btn btn--primary btn--disabled" type="button" disabled>選択開始</button>
+      </div>
+
+      <div id="history" class="history" aria-live="polite"></div>
+      <div class="history-nav center">
+        <button id="prevPage" class="btn btn--ghost" type="button" aria-label="前のページ">⬅️ 前</button>
+        <button id="nextPage" class="btn btn--ghost" type="button" aria-label="次のページ">次 ➡️</button>
+      </div>
+    </section>
+  </main>
+
+  <!-- 抽選結果モーダル -->
+  <div id="modalBackdrop" class="modal-backdrop" aria-hidden="true">
+    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+      <header class="modal-header">
+        <h2 id="modalTitle">抽選結果</h2>
+        <!-- 叉叉圖示風格的關閉鍵 -->
+        <button id="closeModal" class="btn btn--danger btn--icon" type="button" aria-label="閉じる"></button>
+      </header>
+
+      <!-- 純色結果背景（翻牌 + 翻面後のみ落下） -->
+      <div id="result" class="result" aria-live="assertive">
+        <div id="particles" class="particles"></div>
+      </div>
+
+      <div class="row-btns center">
+        <button id="reroll" class="btn btn--primary" type="button">もう一度抽選</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="main.js"></script>
+</body>
+</html>
