@@ -107,6 +107,46 @@ function validateNewItem(raw){
   return null;
 }
 
+/* ========= 結果文字サイズ自動調整（★ 新增） ========= */
+/**
+ * 將結果文字放到「接近卡片大小」，若超出才逐步縮小。
+ * @param {HTMLElement} side - .card-front 或 .card-back
+ */
+function fitResultText(side){
+  if (!side || !elResult) return;
+
+  // 以結果容器的實際大小為基準
+  const rect = elResult.getBoundingClientRect();
+  const width = rect.width;
+  const height = rect.height;
+
+  // 防呆：如果容器還沒量到大小，就不處理
+  if (!width || !height) return;
+
+  // 設定一個「理論最大」和「最小」字體
+  const maxFont = Math.min(width, height) * 1;  // 佔卡片高度/寬度的大約 35%
+  const minFont = Math.max(20, Math.min(width, height) * 0.12);
+
+  let fontSize = maxFont;
+  side.style.fontSize = fontSize + 'px';
+  side.style.lineHeight = '1.1';
+
+  // 安全上限，避免極端情況死循環
+  let guard = 0;
+  const GUARD_MAX = 80;
+
+  // 如果文字超出卡片範圍，就逐步縮小
+  while (
+    guard < GUARD_MAX &&
+    fontSize > minFont &&
+    (side.scrollWidth > width * 0.9 || side.scrollHeight > height * 0.9)
+  ){
+    fontSize -= 2;
+    side.style.fontSize = fontSize + 'px';
+    guard++;
+  }
+}
+
 /* ========= UI 更新 ========= */
 function updateUI(){
   elChips.innerHTML = '';
@@ -241,8 +281,14 @@ function openModalWithResult(){
   if (state.isModalOpen) return;
   if (state.items.length < 2){ showAlert('⚠️ 項目は2つ以上必要です'); return; }
 
-  const value = pickRandom();
-  if (value == null){ showAlert('⚠️ 抽選に失敗しました。もう一度お試しください'); return; }
+  const valueRaw = pickRandom();
+  if (valueRaw == null){ showAlert('⚠️ 抽選に失敗しました。もう一度お試しください'); return; }
+
+  const value = String(valueRaw);
+  if (!trim(value)){ // ★ 防呆：結果變成空字串時
+    showAlert('⚠️ 結果が空です。項目を確認してください');
+    return;
+  }
 
   state.isModalOpen = true;
   elModal.classList.add('active');
@@ -266,6 +312,13 @@ function openModalWithResult(){
   wrapper.appendChild(back);
   elResult.appendChild(wrapper);
 
+  // ★ 先依目前內容嘗試放大到接近卡片大小，再必要時縮小
+  //   使用 requestAnimationFrame 確保 layout 已完成
+  requestAnimationFrame(() => {
+    fitResultText(front);
+    fitResultText(back);
+  });
+
   setTimeout(() => {
     wrapper.classList.add('flip');
     createFallingEmojis(10);
@@ -278,8 +331,14 @@ function rerollResult(){
   if (!state.isModalOpen){ openModalWithResult(); return; }
   if (state.items.length < 2){ showAlert('⚠️ 項目は2つ以上必要です'); return; }
 
-  const value = pickRandom();
-  if (value == null){ showAlert('⚠️ 抽選に失敗しました。もう一度お試しください'); return; }
+  const valueRaw = pickRandom();
+  if (valueRaw == null){ showAlert('⚠️ 抽選に失敗しました。もう一度お試しください'); return; }
+
+  const value = String(valueRaw);
+  if (!trim(value)){ // ★ 防呆：結果變成空字串時
+    showAlert('⚠️ 結果が空です。項目を確認してください');
+    return;
+  }
 
   particlesBox.innerHTML = '';
   elResult.querySelector('.card-inner')?.remove();
@@ -298,6 +357,12 @@ function rerollResult(){
   wrapper.appendChild(front);
   wrapper.appendChild(back);
   elResult.appendChild(wrapper);
+
+  // ★ 同樣做文字自動縮放
+  requestAnimationFrame(() => {
+    fitResultText(front);
+    fitResultText(back);
+  });
 
   setTimeout(() => {
     wrapper.classList.add('flip');
